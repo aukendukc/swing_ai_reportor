@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>指導報告書自動生成ツール</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Yu Gothic', '游ゴシック', 'Hiragino Sans', 'ヒラギノ角ゴシック', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .result-area {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #4facfe;
+            display: none;
+        }
+
+        .result-area.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-content {
+            line-height: 1.8;
+            font-size: 1rem;
+            white-space: pre-wrap;
+        }
+
+        .history-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e1e8ed;
+        }
+
+        .history-item {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            border-color: #4facfe;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-date {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .history-input {
+            font-size: 0.9rem;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .success {
+            background: #efe;
+            border: 1px solid #cfc;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .button-group .btn {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .header {
+                background: #4facfe;
+            }
+
+            .btn, .form-group:not(.result-area) {
+                display: none;
+            }
+
+            .result-area {
+                display: block !important;
+                border: 1px solid #ccc;
+                margin: 20px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>指導報告書自動生成ツール</h1>
+            <p>AI による保護者向け報告書の自動生成</p>
+            <p style="font-size: 0.9rem; margin-top: 10px; opacity: 0.8;">デモモードで動作します</p>
+        </div>
+
+        <div class="content">
+            <div class="form-group">
+                <label for="progressContent">進捗内容</label>
+                <textarea id="progressContent" placeholder="例：教科書p.12-14、計算ミス多い、理解度良好&#10;例：英語の単語テストで80点、発音練習を継続中&#10;例：数学の図形問題で苦戦、基礎計算は安定"></textarea>
+            </div>
+
+            <button class="btn" id="generateBtn">報告書を生成</button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>AIが報告書を生成中です...</p>
+            </div>
+
+            <div class="error" id="error"></div>
+            <div class="success" id="success"></div>
+
+            <div class="result-area" id="resultArea">
+                <h3>生成された報告書</h3>
+                <div class="result-content" id="resultContent"></div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" id="copyBtn">コピー</button>
+                    <button class="btn btn-secondary" id="printBtn">印刷</button>
+                </div>
+            </div>
+
+            <div class="history-section" id="historySection">
+                <h3>生成履歴（最新5件）</h3>
+                <div id="historyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ReportGenerator {
+            constructor() {
+                this.history = JSON.parse(localStorage.getItem('reportHistory') || '[]');
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadApiKey();
+                this.displayHistory();
+            }
+
+            setupEventListeners() {
+                document.getElementById('generateBtn').addEventListener('click', () => {
+                    this.generateReport();
+                });
+
+                document.getElementById('copyBtn').addEventListener('click', () => {
+                    this.copyToClipboard();
+                });
+
+                document.getElementById('printBtn').addEventListener('click', () => {
+                    window.print();
+                });
+
+                // Enter key support for textarea
+                document.getElementById('progressContent').addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'Enter') {
+                        this.generateReport();
+                    }
+                });
+            }
+
+            loadApiKey() {
+                // APIキー機能を削除したため、このメソッドは不要
+            }
+
+            async generateReport() {
+                const progressContent = document.getElementById('progressContent').value.trim();
+                
+                if (!progressContent) {
+                    this.showError('進捗内容を入力してください。');
+                    return;
+                }
+
+                this.showLoading(true);
+                this.hideMessages();
+
+                try {
+                    // デモモードでモックデータを使用
+                    const report = this.generateMockReport(progressContent);
+                    this.showSuccess('報告書を生成しました。');
+                    
+                    this.displayResult(report);
+                    this.addToHistory(progressContent, report);
+                } catch (error) {
+                    console.error('Error generating report:', error);
+                    this.showError(`エラーが発生しました: ${error.message}`);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            generateMockReport(progressContent) {
+                // 進捗内容を解析して適切なテンプレートを選択
+                const analysis = this.analyzeProgress(progressContent);
+                
+                // 学習内容の報告セクション
+                const learningReport = this.generateLearningReport(progressContent, analysis);
+                
+                // 評価とコメントセクション
+                const evaluation = this.generateEvaluation(analysis);
+                
+                // 今後の方針セクション
+                const futurePlan = this.generateFuturePlan(analysis);
+                
+                return `${learningReport}
+
+${evaluation}
+
+${futurePlan}`;
+            }
+
+            analyzeProgress(progressContent) {
+                const analysis = {
+                    subjects: [],
+                    strengths: [],
+                    weaknesses: [],
+                    understanding: 'good',
+                    attitude: 'positive',
+                    specificIssues: []
+                };
+
+                // 教科の特定
+                if (progressContent.includes('算数') || progressContent.includes('数学')) {
+                    analysis.subjects.push('算数・数学');
+                }
+                if (progressContent.includes('英語')) {
+                    analysis.subjects.push('英語');
+                }
+                if (progressContent.includes('国語')) {
+                    analysis.subjects.push('国語');
+                }
+                if (progressContent.includes('理科')) {
+                    analysis.subjects.push('理科');
+                }
+                if (progressContent.includes('社会')) {
+                    analysis.subjects.push('社会');
+                }
+
+                // 強みの特定
+                if (progressContent.includes('理解度良好') || progressContent.includes('理解度良好')) {
+                    analysis.strengths.push('理解力');
+                }
+                if (progressContent.includes('素晴らしい') || progressContent.includes('優秀')) {
+                    analysis.strengths.push('学習能力');
+                }
+                if (progressContent.includes('積極的')) {
+                    analysis.strengths.push('学習意欲');
+                }
+
+                // 課題の特定
+                if (progressContent.includes('苦手') || progressContent.includes('苦戦')) {
+                    analysis.weaknesses.push('特定分野の理解');
+                }
+                if (progressContent.includes('計算ミス') || progressContent.includes('ミス')) {
+                    analysis.weaknesses.push('正確性');
+                }
+                if (progressContent.includes('遅い') || progressContent.includes('時間がかかる')) {
+                    analysis.weaknesses.push('処理速度');
+                }
+
+                // 具体的な課題の抽出
+                if (progressContent.includes('円周率')) {
+                    analysis.specificIssues.push('円周率の理解と計算');
+                }
+                if (progressContent.includes('図形')) {
+                    analysis.specificIssues.push('図形問題の解法');
+                }
+                if (progressContent.includes('発音')) {
+                    analysis.specificIssues.push('英語の発音練習');
+                }
+
+                return analysis;
+            }
+
+            generateLearningReport(progressContent, analysis) {
+                const subject = analysis.subjects.length > 0 ? analysis.subjects[0] : '学習';
+                const specificContent = this.extractSpecificContent(progressContent);
+                
+                const templates = [
+                    `【学習内容の報告】
+本日は${specificContent}について学習を進めました。${this.getSubjectSpecificComment(subject)}生徒は集中して取り組み、新しい概念の理解に努めました。`,
+                    
+                    `【学習内容の報告】
+${specificContent}の学習を行いました。${this.getSubjectSpecificComment(subject)}生徒は真剣に取り組み、重要なポイントをしっかりと把握しようとする姿勢が見られました。`,
+                    
+                    `【学習内容の報告】
+本日は${specificContent}について学習いたしました。${this.getSubjectSpecificComment(subject)}生徒は粘り強く取り組み、理解を深めようとする意欲的な態度で臨んでいました。`
+                ];
+
+                return templates[Math.floor(Math.random() * templates.length)];
+            }
+
+            generateEvaluation(analysis) {
+                const strengths = analysis.strengths;
+                const weaknesses = analysis.weaknesses;
+                const specificIssues = analysis.specificIssues;
+
+                let evaluation = '【評価とコメント】\n';
+
+                // 強みの評価
+                if (strengths.includes('理解力')) {
+                    evaluation += '概念の理解力が高く、新しい内容を素早く吸収できています。';
+                } else if (strengths.includes('学習能力')) {
+                    evaluation += '学習能力が高く、複雑な問題にも対応できる力を持っています。';
+                } else if (strengths.includes('学習意欲')) {
+                    evaluation += '学習に対する意欲が高く、積極的に取り組む姿勢が素晴らしいです。';
+                } else {
+                    evaluation += '学習態度は良好で、着実に力をつけています。';
+                }
+
+                // 課題への対応
+                if (weaknesses.length > 0) {
+                    evaluation += '\n\n';
+                    if (weaknesses.includes('正確性')) {
+                        evaluation += '計算の正確性を向上させることで、さらに良い結果が期待できます。';
+                    } else if (weaknesses.includes('特定分野の理解')) {
+                        evaluation += '特定の分野でより深い理解を目指して、基礎を固めていきましょう。';
+                    } else if (weaknesses.includes('処理速度')) {
+                        evaluation += '問題解決のスピードを向上させることで、より効率的な学習が可能になります。';
+                    }
+                }
+
+                // 具体的な課題への言及
+                if (specificIssues.length > 0) {
+                    evaluation += '\n\n';
+                    evaluation += `${specificIssues[0]}については、継続的な練習で確実に力をつけていけると思います。`;
+                }
+
+                return evaluation;
+            }
+
+            generateFuturePlan(analysis) {
+                const weaknesses = analysis.weaknesses;
+                const specificIssues = analysis.specificIssues;
+
+                let plan = '【今後の方針】\n';
+
+                if (weaknesses.includes('正確性')) {
+                    plan += '計算ミスを減らすため、基礎計算の反復練習を継続いたします。';
+                } else if (weaknesses.includes('特定分野の理解')) {
+                    plan += '苦手分野の克服のため、段階的な学習を進めていきたいと思います。';
+                } else if (weaknesses.includes('処理速度')) {
+                    plan += '問題解決の効率性を向上させるため、解法パターンの習得を重視します。';
+                } else {
+                    plan += '現在の学習ペースを維持しながら、さらに発展的な内容にも挑戦していきたいと思います。';
+                }
+
+                if (specificIssues.length > 0) {
+                    plan += `\n\n${specificIssues[0]}については、具体的な練習問題を通じて理解を深めていきます。`;
+                }
+
+                plan += '\n\nご家庭でも復習をしていただければ、より効果的な学習が期待できます。';
+
+                return plan;
+            }
+
+            extractSpecificContent(progressContent) {
+                // 具体的な学習内容を抽出
+                if (progressContent.includes('教科書p.')) {
+                    const match = progressContent.match(/教科書p\.(\d+)-(\d+)/);
+                    if (match) {
+                        return `教科書${match[1]}ページから${match[2]}ページ`;
+                    }
+                }
+                
+                // 特定の内容を抽出
+                const specificTerms = ['円周率', '図形問題', '単語テスト', '発音練習', '計算問題'];
+                for (const term of specificTerms) {
+                    if (progressContent.includes(term)) {
+                        return term;
+                    }
+                }
+
+                return progressContent;
+            }
+
+            getSubjectSpecificComment(subject) {
+                const comments = {
+                    '算数・数学': '論理的思考力を養う重要な内容です。',
+                    '英語': 'コミュニケーション能力の基礎となる内容です。',
+                    '国語': '言語能力と表現力を高める内容です。',
+                    '理科': '科学的思考力を育む内容です。',
+                    '社会': '社会認識を深める内容です。'
+                };
+
+                return comments[subject] || '基礎学力を向上させる重要な内容です。';
+            }
+
+            async callGeminiAPI(progressContent) {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.apiKey}`;
+                
+                const prompt = `以下の進捗内容から、保護者向けの丁寧な指導報告書を200文字程度で作成してください。
+
+進捗内容：${progressContent}
+
+以下の形式で出力してください：
+・学習内容の報告
+・評価とコメント
+・今後の方針
+・丁寧語使用
+・保護者が安心する内容
+
+報告書：`;
+
+                const requestBody = {
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }],
+                    generationConfig: {
+                        temperature: 0.7,
+                        topK: 40,
+                        topP: 0.95,
+                        maxOutputTokens: 800
+                    }
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(this.getErrorMessage(errorData));
+                }
+
+                const data = await response.json();
+                
+                if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
+                    throw new Error('APIからの応答が不正です。');
+                }
+
+                return data.candidates[0].content.parts[0].text || '報告書の生成に失敗しました。';
+            }
+
+            getErrorMessage(errorData) {
+                if (errorData.error && errorData.error.message) {
+                    if (errorData.error.message.includes('API key')) {
+                        return 'APIキーが無効です。正しいAPIキーを入力してください。';
+                    } else if (errorData.error.message.includes('quota')) {
+                        return 'API利用制限に達しました。しばらく時間をおいてから再試行してください。';
+                    } else {
+                        return errorData.error.message;
+                    }
+                }
+                return 'API呼び出しに失敗しました。';
+            }
+
+            displayResult(report) {
+                document.getElementById('resultContent').textContent = report;
+                document.getElementById('resultArea').classList.add('show');
+                document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            addToHistory(input, output) {
+                const historyItem = {
+                    id: Date.now(),
+                    date: new Date().toLocaleString('ja-JP'),
+                    input: input.substring(0, 100) + (input.length > 100 ? '...' : ''),
+                    output: output
+                };
+
+                this.history.unshift(historyItem);
+                this.history = this.history.slice(0, 5); // Keep only latest 5 items
+                
+                localStorage.setItem('reportHistory', JSON.stringify(this.history));
+                this.displayHistory();
+            }
+
+            displayHistory() {
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+
+                if (this.history.length === 0) {
+                    historyList.innerHTML = '<p style="color: #7f8c8d; text-align: center;">生成履歴はありません</p>';
+                    return;
+                }
+
+                this.history.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                        <div class="history-date">${item.date}</div>
+                        <div class="history-input">${this.escapeHtml(item.input)}</div>
+                    `;
+                    
+                    historyItem.addEventListener('click', () => {
+                        document.getElementById('progressContent').value = item.input.replace('...', '');
+                        document.getElementById('resultContent').textContent = item.output;
+                        document.getElementById('resultArea').classList.add('show');
+                    });
+                    
+                    historyList.appendChild(historyItem);
+                });
+            }
+
+            async copyToClipboard() {
+                const resultContent = document.getElementById('resultContent').textContent;
+                
+                try {
+                    await navigator.clipboard.writeText(resultContent);
+                    this.showSuccess('報告書をクリップボードにコピーしました。');
+                } catch (error) {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = resultContent;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    this.showSuccess('報告書をクリップボードにコピーしました。');
+                }
+            }
+
+            showLoading(show) {
+                const loading = document.getElementById('loading');
+                const generateBtn = document.getElementById('generateBtn');
+                
+                if (show) {
+                    loading.classList.add('show');
+                    generateBtn.disabled = true;
+                    generateBtn.textContent = '生成中...';
+                } else {
+                    loading.classList.remove('show');
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = '報告書を生成';
+                }
+            }
+
+            showError(message) {
+                const error = document.getElementById('error');
+                error.textContent = message;
+                error.classList.add('show');
+                error.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showSuccess(message) {
+                const success = document.getElementById('success');
+                success.textContent = message;
+                success.classList.add('show');
+                setTimeout(() => {
+                    success.classList.remove('show');
+                }, 3000);
+            }
+
+            hideMessages() {
+                document.getElementById('error').classList.remove('show');
+                document.getElementById('success').classList.remove('show');
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new ReportGenerator();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "swing-report-generator",
+  "version": "1.0.0",
+  "description": "Google Gemini APIを使用した指導報告書自動生成ツール",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static site - no build required'",
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "education",
+    "report",
+    "gemini",
+    "ai",
+    "static-site"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
