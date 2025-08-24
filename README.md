@@ -14,7 +14,33 @@ Google Gemini APIを使用した保護者向け指導報告書の自動生成ツ
 
 ## デプロイ方法
 
-### Vercelへのデプロイ（推奨）
+### Netlifyへのデプロイ（推奨）
+
+1. **GitHubにプッシュ**
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/yourusername/swing-report-generator.git
+   git push -u origin main
+   ```
+
+2. **Netlifyでデプロイ**
+   - [Netlify](https://netlify.com) にアクセス
+   - GitHubアカウントでログイン
+   - 「New site from Git」をクリック
+   - GitHubを選択してリポジトリを接続
+   - Build settings:
+     - Build command: 空欄
+     - Publish directory: `.`
+   - 「Deploy site」をクリック
+
+3. **カスタムドメイン設定（オプション）**
+   - Netlifyダッシュボードで「Domain settings」
+   - カスタムドメインを追加
+
+### Vercelへのデプロイ
 
 1. **GitHubにプッシュ**
    ```bash
